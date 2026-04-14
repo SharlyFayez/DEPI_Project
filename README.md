@@ -1,177 +1,59 @@
-Project Name:
-Intelligent-Traffic-Management-Dashboard
+#### Project Name
+# Intelligent-Traffic-Management-Dashboard
 
-Project Idea
+### Project Idea
 
-Cities struggle to monitor traffic congestion and provide actionable insights for traffic control.
+o Cities struggle to monitor traffic congestion and provide actionable insights for traffic control.
 This project aims to develop a Traffic Monitoring System that collects simulated traffic data (from IoT sensors or CSV logs) and displays real-time insights through a web dashboard.
 The system focuses on automation, CI/CD, containerization, monitoring, and scalable deployment using DevOps tools, without implementing AI prediction models.
+________________________________________
+### Team Members:
 
-Team Members
+1. Sharly Fayez – Team Leader
+2. Kerolos Nasser
+3. Marwan Salah
+4. Marwan Samy
+5. Youssef El Ghandour
+________________________________________
+### Project Plan
 
-Sharly Fayez – Team Leader
-Kerolos Nasser
-Marwan Salah
-Marwan Samy
-Youssef El Ghandour
+1. Research & requirement analysis, team role assignment
+2. System architecture & dashboard design
+3. Development of data service & web dashboard
+4. CI/CD setup (Jenkins) & Docker containerization
+5. Deployment using Kubernetes, Terraform & Ansible
+6. Monitoring setup (Prometheus & Grafana) & testing
+7. Final review, optimization & bug fixing
+8. Presentation & project submission
+________________________________________
+### Roles & Responsibilities
+
+1. Sharly Fayez: Project management, CI/CD pipeline (Jenkins), overall architecture
+2. Kerolos Nasser: Docker & Kubernetes deployment
+3. Marwan Salah: Backend / Data simulation service
+4. Marwan Samy: Monitoring (Prometheus & Grafana)
+5. Youssef El Ghandour: Frontend dashboard & UI
 
 ________________________________________
-Work Plan
-1.	Research & Analysis
-o	Audience personas
-2.	Visual Identity
-o	Logo design
-3.	Main Designs
-o	Poster
-4.	Complementary Products
-5.	Review & Finalization
-6.	Final Presentation
-________________________________________
-Roles & Responsibilities
-•	________________________________________
-
-
-•	KPIs (Key Performance Indicators) – Metrics for project success (e.g., response time, system uptime, user adoption rate).
+###	KPIs (Key Performance Indicators)
+- System uptime ≥ 99%
+- Deployment success rate
+- Response time < 2 seconds
+- Number of processed traffic records per minute
+- Dashboard load time
+- Alert accuracy (correct congestion detection)
+- CI/CD pipeline execution time
 
 ________________________________________
+### Tools & Technologies
 
-
-Instructor 
-*
+Jenkins, Docker, Kubernetes, Prometheus, Grafana, Ansible, Terraform, AWS EC2/S3/VPC, Nginx, Git
+________________________________________
+### Instructor 
+Eng. Ahmed Osman Gamil
 
 ________________________________________
-
-
-Project Files
+### Project Files
 You can find the full project files here:
---------
-________________________________________
-License
-This project is licensed under the 
-________________________________________
-•	KPIs (Key Performance Indicators) – Metrics for project success (e.g., response time, system uptime, user adoption rate).
+https://drive.google.com/drive/u/1/folders/1eNYN_dH70Wz65FPrpxnlNy45P8X5Ksse
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-🚦 Intelligent Traffic Management Dashboard
-📌 Project Overview
-
-Cities struggle to monitor traffic congestion and provide actionable insights for traffic control.
-
-This project aims to develop a Traffic Monitoring System that collects simulated traffic data (from IoT sensors or CSV logs) and displays real-time insights through a web dashboard.
-
-The system focuses on automation, CI/CD, containerization, monitoring, and scalable deployment using DevOps tools, without implementing AI prediction models.
-
-🎯 Objectives
-
-Collect and process simulated traffic data
-
-Display congestion levels and peak times in a real-time dashboard
-
-Automate build and deployment pipelines
-
-Ensure scalability using Kubernetes
-
-Monitor system performance and generate alerts
-
-🏗️ System Architecture
-
-The system consists of:
-
-Traffic Data Collection Service (Dockerized)
-
-Web Dashboard
-
-CI/CD Pipeline using Jenkins
-
-Docker Containers
-
-Kubernetes Cluster for scalability
-
-Prometheus & Grafana for monitoring
-
-Nginx as Reverse Proxy
-
-Terraform for AWS Infrastructure provisioning
-
-Ansible for server configuration
-
-Git for version control
-
-📦 Deliverables
-
-Traffic Data Collection Service (CSV or simulated sensor inputs – Dockerized)
-
-Web Dashboard showing:
-
-Traffic congestion levels
-
-Peak traffic times
-
-Alerts
-
-CI/CD pipeline for service updates (Jenkins)
-
-Docker containers for all services
-
-Kubernetes deployment configuration
-
-Prometheus monitoring dashboards & alerts
-
-Nginx reverse proxy configuration
-
-Terraform scripts for AWS infrastructure
-
-Ansible scripts for server setup
-
-Git repository for code and infrastructure
-
-🛠️ Tools & Technologies
-
-Jenkins
-
-Docker
-
-Kubernetes
-
-Prometheus
-
-Grafana
-
-Ansible
-
-Terraform
-
-AWS (EC2 / S3)
-
-Nginx
-
-Git
-
-👥 Team Members
-
-Sharly Fayez – Team Leader
-
-Kerolos Nasser
-
-Marwan Salah
-
-Marwan Samy
-
-Youssef El Ghandour
