@@ -1,3 +1,4 @@
+from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
@@ -5,6 +6,7 @@ from database import engine, SessionLocal
 from models import TrafficData, Base
 
 app = FastAPI()
+Instrumentator().instrument(app).expose(app)
 
 app.add_middleware(
     CORSMiddleware,
