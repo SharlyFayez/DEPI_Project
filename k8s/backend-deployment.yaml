@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-backend
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: traffic-backend
+
+  template:
+    metadata:
+      labels:
+        app: traffic-backend
+
+    spec:
+      containers:
+      - name: backend
+
+        image: intelligent-traffic-management-dashboard-backend:latest
+
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 8000
+
+        env:
+        - name: DATABASE_URL
+          value: postgresql://postgres:postgres@traffic-db:5432/traffic
