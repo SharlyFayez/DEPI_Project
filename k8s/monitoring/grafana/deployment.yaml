@@ -1,0 +1,301 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: cairo-traffic
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      # ─── Init container writes provisioning files to emptyDir (no ConfigMap) ─
+      initContainers:
+        - name: grafana-config-init
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p /etc/grafana/provisioning/datasources
+              mkdir -p /etc/grafana/provisioning/dashboards
+              mkdir -p /var/lib/grafana/dashboards
+
+              # ── Prometheus datasource ──────────────────────────────────────
+              cat > /etc/grafana/provisioning/datasources/prometheus.yml << 'EOF'
+              apiVersion: 1
+              datasources:
+                - name: Prometheus
+                  type: prometheus
+                  access: proxy
+                  url: http://prometheus:9090
+                  isDefault: true
+                  editable: false
+              EOF
+
+              # ── Dashboard provider ─────────────────────────────────────────
+              cat > /etc/grafana/provisioning/dashboards/provider.yml << 'EOF'
+              apiVersion: 1
+              providers:
+                - name: cairo-traffic
+                  type: file
+                  disableDeletion: false
+                  updateIntervalSeconds: 30
+                  allowUiUpdates: true
+                  options:
+                    path: /var/lib/grafana/dashboards
+              EOF
+
+              # ── Cairo Traffic Dashboard JSON ───────────────────────────────
+              cat > /var/lib/grafana/dashboards/cairo-traffic.json << 'DASHEOF'
+              {
+                "title": "Cairo Traffic System",
+                "uid": "cairo-traffic-main",
+                "schemaVersion": 39,
+                "version": 1,
+                "refresh": "30s",
+                "time": { "from": "now-1h", "to": "now" },
+                "panels": [
+                  {
+                    "id": 1,
+                    "title": "Node CPU Usage (%)",
+                    "type": "timeseries",
+                    "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+                    "targets": [
+                      {
+                        "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+                        "legendFormat": "CPU {{ instance }}"
+                      }
+                    ],
+                    "fieldConfig": {
+                      "defaults": {
+                        "unit": "percent",
+                        "thresholds": {
+                          "steps": [
+                            { "color": "green", "value": null },
+                            { "color": "yellow", "value": 70 },
+                            { "color": "red", "value": 85 }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": 2,
+                    "title": "Node Memory Usage (%)",
+                    "type": "timeseries",
+                    "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+                    "targets": [
+                      {
+                        "expr": "(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100",
+                        "legendFormat": "Memory {{ instance }}"
+                      }
+                    ],
+                    "fieldConfig": {
+                      "defaults": {
+                        "unit": "percent",
+                        "thresholds": {
+                          "steps": [
+                            { "color": "green", "value": null },
+                            { "color": "yellow", "value": 75 },
+                            { "color": "red", "value": 90 }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": 3,
+                    "title": "Container CPU Usage (cairo-traffic namespace)",
+                    "type": "timeseries",
+                    "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+                    "targets": [
+                      {
+                        "expr": "sum by (container) (rate(container_cpu_usage_seconds_total{namespace=\"cairo-traffic\", container!=\"\"}[5m])) * 100",
+                        "legendFormat": "{{ container }}"
+                      }
+                    ],
+                    "fieldConfig": { "defaults": { "unit": "percent" } }
+                  },
+                  {
+                    "id": 4,
+                    "title": "Container Memory Usage (cairo-traffic namespace)",
+                    "type": "timeseries",
+                    "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+                    "targets": [
+                      {
+                        "expr": "sum by (container) (container_memory_working_set_bytes{namespace=\"cairo-traffic\", container!=\"\"})",
+                        "legendFormat": "{{ container }}"
+                      }
+                    ],
+                    "fieldConfig": { "defaults": { "unit": "bytes" } }
+                  },
+                  {
+                    "id": 5,
+                    "title": "API Response Time (p50 / p95 / p99)",
+                    "type": "timeseries",
+                    "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+                    "targets": [
+                      {
+                        "expr": "histogram_quantile(0.50, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"cairo-backend\"}[5m])))",
+                        "legendFormat": "p50"
+                      },
+                      {
+                        "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"cairo-backend\"}[5m])))",
+                        "legendFormat": "p95"
+                      },
+                      {
+                        "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"cairo-backend\"}[5m])))",
+                        "legendFormat": "p99"
+                      }
+                    ],
+                    "fieldConfig": { "defaults": { "unit": "s" } }
+                  },
+                  {
+                    "id": 6,
+                    "title": "Traffic Request Count (req/s)",
+                    "type": "timeseries",
+                    "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+                    "targets": [
+                      {
+                        "expr": "sum by (route) (rate(http_requests_total{job=\"cairo-backend\"}[5m]))",
+                        "legendFormat": "{{ route }}"
+                      }
+                    ],
+                    "fieldConfig": { "defaults": { "unit": "reqps" } }
+                  },
+                  {
+                    "id": 7,
+                    "title": "Error Rate (5xx per second)",
+                    "type": "timeseries",
+                    "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+                    "targets": [
+                      {
+                        "expr": "sum(rate(http_requests_total{job=\"cairo-backend\", status=~\"5..\"}[5m]))",
+                        "legendFormat": "5xx errors/s"
+                      },
+                      {
+                        "expr": "sum(rate(http_requests_total{job=\"cairo-backend\", status=~\"4..\"}[5m]))",
+                        "legendFormat": "4xx errors/s"
+                      }
+                    ],
+                    "fieldConfig": {
+                      "defaults": {
+                        "unit": "reqps",
+                        "thresholds": {
+                          "steps": [
+                            { "color": "green", "value": null },
+                            { "color": "red", "value": 0.01 }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": 8,
+                    "title": "Cairo Traffic Congestion by District",
+                    "type": "gauge",
+                    "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+                    "targets": [
+                      {
+                        "expr": "cairo_congestion_level",
+                        "legendFormat": "{{ district }}"
+                      }
+                    ],
+                    "fieldConfig": {
+                      "defaults": {
+                        "unit": "percentunit",
+                        "min": 0,
+                        "max": 1,
+                        "thresholds": {
+                          "steps": [
+                            { "color": "green", "value": null },
+                            { "color": "yellow", "value": 0.5 },
+                            { "color": "red", "value": 0.8 }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": 9,
+                    "title": "Total Traffic Count by District",
+                    "type": "stat",
+                    "gridPos": { "x": 0, "y": 32, "w": 24, "h": 6 },
+                    "targets": [
+                      {
+                        "expr": "sum by (district) (cairo_traffic_count)",
+                        "legendFormat": "{{ district }}"
+                      }
+                    ],
+                    "fieldConfig": { "defaults": { "unit": "short" } }
+                  }
+                ]
+              }
+              DASHEOF
+
+              echo "Grafana provisioning files written successfully"
+          volumeMounts:
+            - name: grafana-provisioning
+              mountPath: /etc/grafana/provisioning
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana/dashboards
+
+      containers:
+        - name: grafana
+          image: grafana/grafana:10.4.0
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: "admin"
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: "cairo-admin-2024"
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "false"
+            - name: GF_SERVER_ROOT_URL
+              value: "http://grafana:3000"
+            - name: GF_PATHS_PROVISIONING
+              value: "/etc/grafana/provisioning"
+            - name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH
+              value: "/var/lib/grafana/dashboards/cairo-traffic.json"
+          volumeMounts:
+            - name: grafana-provisioning
+              mountPath: /etc/grafana/provisioning
+            - name: grafana-dashboards
+              mountPath: /var/lib/grafana/dashboards
+            - name: grafana-storage
+              mountPath: /var/lib/grafana
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+      volumes:
+        - name: grafana-provisioning
+          emptyDir: {}
+        - name: grafana-dashboards
+          emptyDir: {}
+        - name: grafana-storage
+          emptyDir: {}

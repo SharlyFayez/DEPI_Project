@@ -1,59 +1,112 @@
-#### Project Name
-# Intelligent-Traffic-Management-Dashboard
+# 🚦 Cairo Intelligent Traffic Management System
 
-### Project Idea
+Real-time traffic monitoring dashboard for Cairo Governorate — built with React + Vite (frontend), Node.js + Express + Prisma (backend), PostgreSQL (database), and a live data simulator.
 
-o Cities struggle to monitor traffic congestion and provide actionable insights for traffic control.
-This project aims to develop a Traffic Monitoring System that collects simulated traffic data (from IoT sensors or CSV logs) and displays real-time insights through a web dashboard.
-The system focuses on automation, CI/CD, containerization, monitoring, and scalable deployment using DevOps tools, without implementing AI prediction models.
-________________________________________
-### Team Members:
+---
 
-1. Sharly Fayez – Team Leader
-2. Kerolos Nasser
-3. Marwan Salah
-4. Marwan Samy
-5. Youssef El Ghandour
-________________________________________
-### Project Plan
+## 📁 Project Structure
 
-1. Research & requirement analysis, team role assignment
-2. System architecture & dashboard design
-3. Development of data service & web dashboard
-4. CI/CD setup (Jenkins) & Docker containerization
-5. Deployment using Kubernetes, Terraform & Ansible
-6. Monitoring setup (Prometheus & Grafana) & testing
-7. Final review, optimization & bug fixing
-8. Presentation & project submission
-________________________________________
-### Roles & Responsibilities
+```
+exe/
+├── front/          React + Vite dashboard
+├── back/           Node.js + Express + Prisma API
+├── simulator/      Cairo traffic data simulator
+├── nginx/          Reverse-proxy config
+├── docker-compose.yml
+└── README.md
+```
 
-1. Sharly Fayez: Project management, CI/CD pipeline (Jenkins), overall architecture
-2. Kerolos Nasser: Docker & Kubernetes deployment
-3. Marwan Salah: Backend / Data simulation service
-4. Marwan Samy: Monitoring (Prometheus & Grafana)
-5. Youssef El Ghandour: Frontend dashboard & UI
+---
 
-________________________________________
-###	KPIs (Key Performance Indicators)
-- System uptime ≥ 99%
-- Deployment success rate
-- Response time < 2 seconds
-- Number of processed traffic records per minute
-- Dashboard load time
-- Alert accuracy (correct congestion detection)
-- CI/CD pipeline execution time
+## 🗺️ Cairo Locations Covered (26 sensors)
 
-________________________________________
-### Tools & Technologies
+Downtown Cairo · Maadi · Nasr City · East Cairo · Heliopolis · Mohandiseen · Zamalek · Shubra · Imbaba · Giza
 
-Jenkins, Docker, Kubernetes, Prometheus, Grafana, Ansible, Terraform, AWS EC2/S3/VPC, Nginx, Git
-________________________________________
-### Instructor 
-Eng. Ahmed Osman Gamil
+---
 
-________________________________________
-### Project Files
-You can find the full project files here:
-https://drive.google.com/drive/u/1/folders/1eNYN_dH70Wz65FPrpxnlNy45P8X5Ksse
+## 🚀 Quick Start (Docker)
 
+```bash
+docker-compose up --build
+```
+
+Then open → **http://localhost**
+
+---
+
+## 🔧 Manual Start
+
+### 1. Database
+```bash
+# Start PostgreSQL locally and set DATABASE_URL in back/.env
+```
+
+### 2. Backend
+```bash
+cd back
+npm install
+npx prisma migrate deploy
+npm run dev          # runs on :5000
+```
+
+### 3. Frontend
+```bash
+cd front
+npm install
+npm run dev          # runs on :5173
+```
+
+### 4. Simulator
+```bash
+cd simulator
+npm install
+node simulator.js    # seeds 30 records, then streams every 3s
+```
+
+---
+
+## 🌐 API Endpoints
+
+| Method | Endpoint                    | Description                        |
+|--------|-----------------------------|------------------------------------|
+| GET    | /api/traffic                | All traffic records (last 100)     |
+| POST   | /api/traffic                | Create a traffic record            |
+| GET    | /api/traffic/stats          | Aggregated stats & KPIs            |
+| GET    | /api/traffic/alerts         | HIGH congestion + incident alerts  |
+| GET    | /api/traffic/by-district    | Per-district aggregates            |
+| GET    | /api/traffic/hourly         | 24-hour trend data                 |
+| GET    | /api/traffic/incidents      | Active incidents                   |
+| GET    | /api/traffic/road-types     | Stats grouped by road type         |
+| GET    | /health                     | Server health check                |
+
+---
+
+## 📊 Dashboard Sections
+
+- **Weather Banner** — dominant weather condition across Cairo sensors  
+- **Stats Cards** — total records, high congestion zones, avg vehicles, avg speed, active incidents  
+- **Live Traffic Flow** — real-time area chart of vehicle counts  
+- **Road Type Load** — progress bars for Highway / Arterial / Urban / Bridge  
+- **24-Hour Trend** — colour-coded bar chart (low=cyan, medium=amber, high=red)  
+- **District Overview** — cards for each Cairo district with speed bars  
+- **Congestion Alerts** — live table of HIGH-congestion locations  
+- **Active Incidents** — accidents, construction, breakdowns  
+
+---
+
+## 🗄️ Database Schema
+
+```prisma
+model TrafficData {
+  id               Int      @id @default(autoincrement())
+  location         String             // e.g. "Tahrir Square"
+  district         String             // e.g. "Downtown Cairo"
+  roadType         String             // HIGHWAY | ARTERIAL | URBAN | BRIDGE
+  vehicleCount     Int
+  averageSpeed     Float
+  congestionLevel  String             // LOW | MEDIUM | HIGH
+  incidentType     String             // NONE | ACCIDENT | CONSTRUCTION | BREAKDOWN
+  weatherCondition String             // CLEAR | DUSTY | RAINY | FOGGY
+  createdAt        DateTime @default(now())
+}
+```

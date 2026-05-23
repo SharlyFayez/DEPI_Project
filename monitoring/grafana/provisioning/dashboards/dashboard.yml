@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+- name: 'Cairo Traffic Dashboards'
+  orgId: 1
+  folder: 'Cairo Traffic'
+  type: file
+  disableDeletion: false
+  editable: true
+  options:
+    path: /etc/grafana/provisioning/dashboards

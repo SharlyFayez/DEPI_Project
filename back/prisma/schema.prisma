@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model TrafficData {
+  id               Int      @id @default(autoincrement())
+  location         String
+  district         String
+  roadType         String   @default("ARTERIAL")
+  vehicleCount     Int
+  averageSpeed     Float
+  congestionLevel  String
+  incidentType     String   @default("NONE")
+  weatherCondition String   @default("CLEAR")
+  createdAt        DateTime @default(now())
+}
